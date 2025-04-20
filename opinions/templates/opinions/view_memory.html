@@ -1,0 +1,51 @@
+{% extends 'opinions/base.html' %}
+
+{% block title %}View Memory{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-lg p-6 memory-card hover:shadow-xl transition-shadow duration-300">
+        <div class="text-sm text-gray-500 mb-4">{{ memory.created_at|date:"F j, Y" }}</div>
+        <div class="text-lg text-gray-800 mb-6">{{ memory.content }}</div>
+        
+        {% if memory.answers.all %}
+        <div class="space-y-4 mt-6 pt-6 border-t border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Questions & Answers</h3>
+            {% for answer in memory.answers.all %}
+            <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-sm font-medium text-indigo-600">Q: {{ answer.question.text }}</p>
+                <p class="mt-2 text-gray-700">A: {{ answer.answer_text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-6 flex justify-center space-x-4">
+        <button onclick="window.history.back()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
+            Go Back
+        </button>
+        <button onclick="shareMemory()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+            Share Memory
+        </button>
+    </div>
+</div>
+
+<script>
+function shareMemory() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Shared Memory',
+            text: '{{ memory.content|truncatechars:100 }}',
+            url: window.location.href
+        })
+        .catch(error => console.log('Error sharing:', error));
+    } else {
+        // Fallback for browsers that don't support navigator.share
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => alert('Link copied to clipboard!'))
+            .catch(err => console.error('Failed to copy:', err));
+    }
+}
+</script>
+{% endblock %}

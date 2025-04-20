@@ -1,0 +1,60 @@
+{% extends 'opinions/base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+    
+    <div class="grid gap-4">
+        {% for opinion in opinions %}
+            <div class="bg-white shadow-md rounded p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold">About: {{ opinion.recipient }}</h3>
+                        <p class="text-gray-700 mt-2">{{ opinion.content }}</p>
+                        <div class="mt-2 text-sm text-gray-500">
+                            <p>Author: {{ opinion.author.username|default:"Anonymous" }}</p>
+                            <p>Posted: {{ opinion.created_at|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <button onclick="toggleApproval({{ opinion.id }})"
+                                class="px-4 py-2 rounded text-white w-full {% if opinion.is_approved %}bg-red-500 hover:bg-red-600{% else %}bg-green-500 hover:bg-green-600{% endif %}">
+                            {% if opinion.is_approved %}Unapprove{% else %}Approve{% endif %}
+                        </button>
+                        <button onclick="toggleAuthor({{ opinion.id }})"
+                                class="px-4 py-2 rounded text-white w-full {% if opinion.show_author %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-blue-500 hover:bg-blue-600{% endif %}">
+                            {% if opinion.show_author %}Hide Author{% else %}Show Author{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-gray-600 text-center">No opinions submitted yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function toggleApproval(opinionId) {
+    fetch(`/opinions/toggle-approval/${opinionId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+}
+
+function toggleAuthor(opinionId) {
+    fetch(`/opinions/toggle-author/${opinionId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            }
+        });
+}
+</script>
+{% endblock %}

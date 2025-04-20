@@ -1,0 +1,143 @@
+{% extends 'opinions/base.html' %}
+
+{% block title %}Export & Share Memories{% endblock %}
+
+{% block content %}
+<style>
+    .export-card {
+        background: linear-gradient(135deg, #fff 0%, #f0f7ff 100%);
+        transition: all 0.3s ease;
+    }
+    .export-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .share-button {
+        transition: all 0.3s ease;
+    }
+    .share-button:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+        Export & Share Your Memories
+    </h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Export as PDF -->
+        <div class="export-card p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Export as PDF</h2>
+            <p class="text-gray-600 mb-4">Download all your memories in a beautifully formatted PDF document.</p>
+            <form method="post" action="{% url 'export_pdf' %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-indigo-600 text-white rounded-lg py-3 px-4 hover:bg-indigo-700 transition-colors duration-200">
+                    Download PDF
+                </button>
+            </form>
+        </div>
+
+        <!-- Print Memory Cards -->
+        <div class="export-card p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Print Memory Cards</h2>
+            <p class="text-gray-600 mb-4">Create beautiful printable cards of your favorite memories.</p>
+            <form method="post" action="{% url 'print_cards' %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-purple-600 text-white rounded-lg py-3 px-4 hover:bg-purple-700 transition-colors duration-200">
+                    Print Cards
+                </button>
+            </form>
+        </div>
+
+        <!-- Share Individual Memory -->
+        <div class="export-card p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Share Memory</h2>
+            <p class="text-gray-600 mb-4">Share a specific memory with others via link or social media.</p>
+            <select id="memory-select" class="w-full mb-4 rounded-lg border-2 border-indigo-200 p-2">
+                <option value="">Select a memory...</option>
+                {% for opinion in opinions %}
+                    <option value="{{ opinion.id }}">{{ opinion.content|truncatechars:50 }}</option>
+                {% endfor %}
+            </select>
+            <div class="grid grid-cols-4 gap-4">
+                <button onclick="shareOnFacebook()" class="share-button p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fab fa-facebook-f"></i>
+                </button>
+                <button onclick="shareOnTwitter()" class="share-button p-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+                    <i class="fab fa-twitter"></i>
+                </button>
+                <button onclick="shareOnWhatsapp()" class="share-button p-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                    <i class="fab fa-whatsapp"></i>
+                </button>
+                <button onclick="copyShareLink()" class="share-button p-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    <i class="fas fa-link"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Share All Memories -->
+        <div class="export-card p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Share All Memories</h2>
+            <p class="text-gray-600 mb-4">Generate a shareable link to view all your public memories.</p>
+            <div class="flex gap-4">
+                <input type="text" id="share-link" class="flex-1 rounded-lg border-2 border-indigo-200 p-2" readonly value="{{ share_url }}">
+                <button onclick="copyAllMemoriesLink()" class="share-button px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareOnFacebook() {
+    const memoryId = document.getElementById('memory-select').value;
+    if (!memoryId) {
+        alert('Please select a memory to share');
+        return;
+    }
+    const url = `${window.location.origin}/memory/${memoryId}/`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+}
+
+function shareOnTwitter() {
+    const memoryId = document.getElementById('memory-select').value;
+    if (!memoryId) {
+        alert('Please select a memory to share');
+        return;
+    }
+    const url = `${window.location.origin}/memory/${memoryId}/`;
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`, '_blank');
+}
+
+function shareOnWhatsapp() {
+    const memoryId = document.getElementById('memory-select').value;
+    if (!memoryId) {
+        alert('Please select a memory to share');
+        return;
+    }
+    const url = `${window.location.origin}/memory/${memoryId}/`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, '_blank');
+}
+
+function copyShareLink() {
+    const memoryId = document.getElementById('memory-select').value;
+    if (!memoryId) {
+        alert('Please select a memory to share');
+        return;
+    }
+    const url = `${window.location.origin}/memory/${memoryId}/`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+    });
+}
+
+function copyAllMemoriesLink() {
+    const input = document.getElementById('share-link');
+    input.select();
+    document.execCommand('copy');
+    alert('Link copied to clipboard!');
+}
+</script>
+{% endblock %}

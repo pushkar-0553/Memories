@@ -1,0 +1,59 @@
+{% extends 'opinions/base.html' %}
+
+{% block title %}Your Memories{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Your Memories</h1>
+
+    {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if opinions %}
+        <div class="space-y-6">
+            {% for opinion in opinions %}
+                <div class="bg-white p-6 rounded-lg shadow-md{% if not opinion.is_approved %} border-l-4 border-yellow-500{% endif %}">
+                    <p class="text-gray-800 text-lg">{{ opinion.content }}</p>
+                    
+                    {% if opinion.answers.all %}
+                        <div class="mt-4 space-y-3">
+                            <h3 class="font-medium text-gray-700">Answers to Your Questions:</h3>
+                            {% for answer in opinion.answers.all %}
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">{{ answer.question.text }}</p>
+                                    <p class="text-gray-800">{{ answer.answer_text }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
+                        <span class="italic">{{ opinion.created_at|date:"F j, Y" }}</span>
+                        {% if is_admin %}
+                            <div class="flex items-center space-x-4">
+                                <span>Status: {% if opinion.is_approved %}Approved{% else %}Pending{% endif %}</span>
+                                <button onclick="toggleApproval({{ opinion.id }})" 
+                                        class="px-3 py-1 rounded {% if opinion.is_approved %}bg-red-100 text-red-700 hover:bg-red-200{% else %}bg-green-100 text-green-700 hover:bg-green-200{% endif %}">
+                                    {% if opinion.is_approved %}Unapprove{% else %}Approve{% endif %}
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-600 text-lg">No memories found yet.</p>
+            <p class="text-gray-500 mt-2">Your classmates haven't shared any memories about you yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

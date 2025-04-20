@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="content-main">
+    <h1>Upload Student Data CSV</h1>
+    <div class="module">
+        <form action="." method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <p>
+                    Upload a CSV file with columns: roll_number, name<br>
+                    <small>Note: Students will be created with their roll number as initial password</small>
+                </p>
+                <div class="file-upload">
+                    <input type="file" name="csv_file" accept=".csv" required>
+                </div>
+            </div>
+            <div class="submit-row">
+                <input type="submit" value="Upload CSV" class="default">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

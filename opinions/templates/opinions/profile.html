@@ -1,0 +1,123 @@
+{% extends 'opinions/base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Profile Header -->
+    <div class="mb-8 bg-white shadow-xl rounded-lg overflow-hidden border border-orange-200">
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
+            <h1 class="text-3xl font-bold mb-2">Welcome, {{ student.name }}! 👋</h1>
+            <p class="text-orange-100">Roll Number: {{ student.roll_number }}</p>
+        </div>
+        
+        <!-- Change Password Form -->
+        <div class="p-6 bg-orange-50">
+            <h2 class="text-xl font-semibold mb-4 text-orange-800">Change Password</h2>
+            <form method="post" action="{% url 'change_password' %}" class="max-w-md">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-orange-700 text-sm font-bold mb-2" for="current_password">
+                        Current Password
+                    </label>
+                    <input type="password" name="current_password" id="current_password" required
+                           class="shadow-sm border-orange-200 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-orange-700 text-sm font-bold mb-2" for="new_password">
+                        New Password
+                    </label>
+                    <input type="password" name="new_password" id="new_password" required
+                           class="shadow-sm border-orange-200 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-orange-700 text-sm font-bold mb-2" for="confirm_password">
+                        Confirm New Password
+                    </label>
+                    <input type="password" name="confirm_password" id="confirm_password" required
+                           class="shadow-sm border-orange-200 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Memories Section -->
+    <div class="mb-8 bg-white shadow-xl rounded-lg overflow-hidden border border-orange-200">
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6">
+            <h2 class="text-2xl font-bold text-white mb-2">Your Memories 📝</h2>
+            <p class="text-orange-100">What your classmates think about you</p>
+        </div>
+        <div class="p-6 bg-orange-50 divide-y divide-orange-200">
+            {% for opinion in opinions %}
+                <div class="py-4 first:pt-0 last:pb-0">
+                    <div class="bg-white rounded-lg p-4 shadow-sm border border-orange-100">
+                        <p class="text-gray-800 mb-2">{{ opinion.content }}</p>
+                        <p class="text-sm text-orange-600">Shared on {{ opinion.created_at|date:"F j, Y" }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-orange-800 italic">No memories shared yet. Give it some time! 😊</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Questions Section -->
+    <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-orange-200">
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6">
+            <h2 class="text-2xl font-bold text-white mb-2">Your Questions ❓</h2>
+            <p class="text-orange-100">Add questions you'd like your classmates to answer</p>
+        </div>
+        <div class="p-6 bg-orange-50">
+            <form method="post" action="{% url 'add_question' %}" class="mb-6">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-orange-700 text-sm font-bold mb-2" for="question_text">
+                        Add New Question
+                    </label>
+                    <textarea name="question_text" id="question_text" rows="3" required
+                              class="shadow-sm border-orange-200 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                              placeholder="What would you like to know from your classmates?"></textarea>
+                </div>
+                <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    Add Question
+                </button>
+            </form>
+
+            <div class="space-y-4">
+                {% for question in questions %}
+                    <div class="bg-white rounded-lg p-4 shadow-sm border border-orange-100">
+                        <p class="text-gray-800 font-medium">{{ question.text }}</p>
+                        <div class="mt-2 flex items-center justify-between">
+                            <span class="text-sm text-orange-600">Added: {{ question.created_at|date:"F j, Y" }}</span>
+                            <form method="post" action="{% url 'toggle_question' question.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="text-sm px-3 py-1 rounded-full {% if question.is_active %}bg-red-100 text-red-700 hover:bg-red-200{% else %}bg-green-100 text-green-700 hover:bg-green-200{% endif %} transition duration-200">
+                                    {% if question.is_active %}Deactivate{% else %}Activate{% endif %}
+                                </button>
+                            </form>
+                        </div>
+
+                        {% if question.answers.exists %}
+                            <div class="mt-4 space-y-3">
+                                <h4 class="text-sm font-semibold text-orange-800 mb-2">Answers:</h4>
+                                {% for answer in question.answers.all %}
+                                    <div class="bg-orange-50 p-3 rounded-lg border border-orange-100">
+                                        <p class="text-gray-800">{{ answer.answer_text }}</p>
+                                        <p class="text-xs text-orange-600 mt-1">Answered on {{ answer.created_at|date:"F j, Y" }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-orange-800 italic">You haven't added any questions yet. Add some to get more personalized memories! 😊</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

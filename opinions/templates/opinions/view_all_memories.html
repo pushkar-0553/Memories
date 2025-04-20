@@ -1,0 +1,69 @@
+{% extends 'opinions/base.html' %}
+
+{% block title %}{{ student.name }}'s Memories{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-indigo-600">{{ student.name }}'s Memories</h1>
+        <p class="text-gray-600 mt-2">A collection of cherished moments</p>
+    </div>
+
+    <div class="grid gap-6">
+        {% for opinion in opinions %}
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="text-sm text-gray-500 mb-4">{{ opinion.created_at|date:"F j, Y" }}</div>
+            <div class="text-lg text-gray-800 mb-6">{{ opinion.content }}</div>
+            
+            {% if opinion.answers.all %}
+            <div class="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Questions & Answers</h3>
+                {% for answer in opinion.answers.all %}
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-sm font-medium text-indigo-600">Q: {{ answer.question.text }}</p>
+                    <p class="mt-2 text-gray-700">A: {{ answer.answer_text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mt-4 flex justify-end">
+                <button onclick="shareMemory('{{ opinion.id }}')" class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                    <i class="fas fa-share-alt mr-2"></i> Share
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-12 bg-white rounded-xl shadow">
+            <p class="text-gray-600 text-lg">No memories found</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-8 flex justify-center space-x-4">
+        <a href="{% url 'export_pdf' %}" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center">
+            <i class="fas fa-file-pdf mr-2"></i> Download PDF
+        </a>
+        <a href="{% url 'print_cards' %}" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center">
+            <i class="fas fa-print mr-2"></i> Print Cards
+        </a>
+    </div>
+</div>
+
+<script>
+function shareMemory(memoryId) {
+    const url = `${window.location.origin}/memory/${memoryId}/`;
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ student.name }}\'s Memory',
+            url: url
+        })
+        .catch(error => console.log('Error sharing:', error));
+    } else {
+        navigator.clipboard.writeText(url)
+            .then(() => alert('Link copied to clipboard!'))
+            .catch(err => console.error('Failed to copy:', err));
+    }
+}
+</script>
+{% endblock %}
