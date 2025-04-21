@@ -2,6 +2,8 @@ databases:
   - name: class_memories_db
     databaseName: class_memories
     user: class_memories
+    plan: free
+    postgresMajorVersion: 15
 
 services:
   - type: web
@@ -9,6 +11,7 @@ services:
     runtime: python
     buildCommand: "./build.sh"
     startCommand: "gunicorn class_memories.wsgi:application"
+    plan: free
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -18,3 +21,6 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 4
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    autoDeploy: false

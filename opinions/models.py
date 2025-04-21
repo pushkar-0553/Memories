@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.core.management import call_command
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -9,7 +12,15 @@ class Student(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f'{self.name} ({self.roll_number})'
+        return f"{self.user.first_name} {self.user.last_name}"
+
+@receiver([post_save, post_delete], sender=Student)
+def backup_students(sender, instance, **kwargs):
+    """Automatically export students data when a student is added, modified, or deleted"""
+    try:
+        call_command('export_students')
+    except Exception as e:
+        print(f'Error during backup: {str(e)}')
 
     class Meta:
         ordering = ['name']
