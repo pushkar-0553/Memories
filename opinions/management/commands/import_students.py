@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 import csv
 from opinions.models import Student
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 
 class Command(BaseCommand):
     help = 'Import students from CSV'
@@ -11,15 +12,26 @@ class Command(BaseCommand):
             with open('initial_students.csv', 'r') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    # Create or update user
-                    user, created = User.objects.get_or_create(
-                        username=row['username'],
-                        defaults={
-                            'email': row['email'],
-                            'first_name': row['first_name'],
-                            'last_name': row['last_name']
-                        }
-                    )
+                    # Try to create or update user
+                    counter = 1
+                    original_username = row['username']
+                    username = original_username
+                    
+                    while True:
+                        try:
+                            user, created = User.objects.get_or_create(
+                                username=username,
+                                defaults={
+                                    'email': row['email'],
+                                    'first_name': row['first_name'],
+                                    'last_name': row['last_name']
+                                }
+                            )
+                            break
+                        except IntegrityError:
+                            # If username exists, append a number
+                            username = f"{original_username}{counter}"
+                            counter += 1
                     
                     if not created:
                         user.email = row['email']
